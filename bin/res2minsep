@@ -26,18 +26,24 @@ echo -e "\nenergy window : $de eV/atom\n"
 minsep_data=$(ca -de $de -g 2>/dev/null | grep MINSEP | awk '{for(i=2;i<=NF;i++) {printf "%s ", $i} printf "\n"}')
 npairs=$(echo "${minsep_data}" | awk '{print NF; exit}')
 
-minsep_string="#MINSEP=1.0"
 for (( i=1; i<=$npairs; i++ ))
 do
     pair_list=$(echo "${minsep_data}" | awk -v col=$i '{print $col}' | grep -v '0.00' | sort); #echo "$pair_list"
     pair_name=$(echo "${pair_list}" | head -n 1 | awk 'BEGIN{FS="="}{print $1}'); #echo "$pair_name"
     pair_values=$(echo "${pair_list}" | awk 'BEGIN{FS="="}{print $2}'); #echo "$pair_values"
-    pair_min=$(echo "${pair_values}" | head -n 1)
-    pair_max=$(echo "${pair_values}" | tail -n 1)
-    minsep_string="${minsep_string} ${pair_name}=${pair_min}-${pair_max}"
+    pair_min=$(echo "${pair_values}" | sort -n | head -n 1)
+    pair_max=$(echo "${pair_values}" | sort -n | tail -n 1)
+
+    string="${string} ${pair_name}=${pair_min}-${pair_max}"
+    string_eddp="${string_eddp} ${pair_name}=${pair_min}-3"
     min_max="${min_max}\n${pair_name}\t${pair_min}\t${pair_max}"
 done
 
-echo "$minsep_string"
+string="#MINSEP=1.0"
+string_eddp="#MINSEP=1.0"
+
+
+echo "$string"
+echo "$string_eddp"
 echo -e "$min_max" | sort -k2 -n
 echo
