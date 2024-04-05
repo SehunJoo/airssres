@@ -31,6 +31,8 @@ def get_args():
                         help='Rank structures based on volume')                                                        
     parser.add_argument('-pa', '--peratom', action='store_true',
                         help='Rank structures based on per-atom properties')                                                        
+    parser.add_argument('-pc', '--percell', action='store_true',
+                        help='Rank structures based on per-cell properties')                                                        
     parser.add_argument('-rdf', '--rdf', action='store_true',
                         help='Calculate radial distribution function')                                                        
     parser.add_argument('-cv', '--volume', action='store_true',
@@ -104,7 +106,11 @@ for filename in files:
 
 cryan = CryanAtoms(structures)
 
-norm = 'atom' if args.peratom else 'formula'
+norm = 'formula'
+if args.peratom:
+    norm = 'atom'
+if args.percell:
+    norm = 'cell'
 
 if args.rank:
     print(cryan.to_str(norm=norm))

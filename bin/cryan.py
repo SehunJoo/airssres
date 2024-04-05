@@ -44,6 +44,17 @@ class CryanAtoms():
                 f" {st.info.get('spacegroup'):<10}"
                 for st in self.structures
             ]
+        elif norm == 'cell':
+            lines = [
+                f"{st.info.get('name'):<30}"
+                f" {st.info.get('pressure'):>8.2f}"
+                f" {st.info.get('volume'):>9.3f}"
+                f" {st.info.get('energy'):>20f}"
+                f" {st.info.get('natoms'):4d}"
+                f" {st.info.get('formula'):15s}"
+                f" {st.info.get('spacegroup'):<10}"
+                for st in self.structures
+            ]
         # sort strings
         if sort == 'energy':
             key = lambda line: (len(line.split()[5]), line.split()[5], -float(line.split()[3]))

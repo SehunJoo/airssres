@@ -20,30 +20,51 @@ echo -e "--------------------------------------------------------------"
 
 echo -e "\nenergy window : $de eV/atom\n"
 
-
 # Minimum separation range
 
 minsep_data=$(ca -de $de -g 2>/dev/null | grep MINSEP | awk '{for(i=2;i<=NF;i++) {printf "%s ", $i} printf "\n"}')
 npairs=$(echo "${minsep_data}" | awk '{print NF; exit}')
+min=9999
 
 for (( i=1; i<=$npairs; i++ ))
 do
-    pair_list=$(echo "${minsep_data}" | awk -v col=$i '{print $col}' | grep -v '0.00' | sort); #echo "$pair_list"
-    pair_name=$(echo "${pair_list}" | head -n 1 | awk 'BEGIN{FS="="}{print $1}'); #echo "$pair_name"
-    pair_values=$(echo "${pair_list}" | awk 'BEGIN{FS="="}{print $2}'); #echo "$pair_values"
-    pair_min=$(echo "${pair_values}" | sort -n | head -n 1)
-    pair_max=$(echo "${pair_values}" | sort -n | tail -n 1)
+    # get data column for a pair
+    pair_list=$(echo "${minsep_data}" | awk -v col=$i '{print $col}' | grep -v '0.00' | sort -n); #echo "$pair_list"
 
+    # get pair name
+    pair_name=$(echo "${pair_list}" | head -n 1 | awk 'BEGIN{FS="="}{print $1}'); #echo "$pair_name"
+    pair_name_temp=$(echo $pair_name | tr "-" "\n" | sort | tr "\n" "-")
+    pair_name=${pair_name_temp%-}
+
+    # get pair values
+    pair_values=$(echo "${pair_list}" | awk 'BEGIN{FS="="}{print $2}' | sort -n); #echo "$pair_values"
+    pair_min=$(echo "${pair_values}" | head -n 1)
+    pair_max=$(echo "${pair_values}" | tail -n 1)
+
+    # get global minimum value
+    min=$(echo  -e "${min}\n${pair_min}" | sort -n | head -n 1)
+
+    # output
     string="${string} ${pair_name}=${pair_min}-${pair_max}"
     string_eddp="${string_eddp} ${pair_name}=${pair_min}-3"
-    min_max="${min_max}\n${pair_name}\t${pair_min}\t${pair_max}"
+    tsv="${tsv}\n${pair_name}\t${pair_min}\t${pair_max}"
 done
 
-string="#MINSEP=1.0"
-string_eddp="#MINSEP=1.0"
 
-
-echo "$string"
-echo "$string_eddp"
-echo -e "$min_max" | sort -k2 -n
+string="#MINSEP=1.0 ${string}"
+string_eddp="#MINSEP=${min}-3 ${string_eddp}"
 echo
+
+# Output
+
+echo -e "Pair\tMin\tMax"
+echo -e "$tsv" | sort -k1
+echo
+
+echo -e "AIRSS MINSEP: min-max ranges\n"
+echo "$string"
+echo -e "\n"
+
+echo -e "AIRSS MINSEP: EDDP training\n"
+echo "$string_eddp"
+echo -e "\n"
