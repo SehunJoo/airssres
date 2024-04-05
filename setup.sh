@@ -2,12 +2,12 @@
 
 set -e
 
-sed -i '/[[:print:]]*MPRES[[:print:]]*/d' ~/.bashrc
+sed -i '/[[:print:]]*AIRSSRES[[:print:]]*/d' ~/.bashrc
 
 (
     echo
-    echo "export MPRES='$(pwd)/bin'"
-    echo 'export PATH="$MPRES:$PATH"'
+    echo "export AIRSSRES='$(pwd)/bin'"
+    echo 'export PATH="$AIRSSRES:$PATH"'
 ) >> ~/.bashrc
 
 echo "execute the following command:"
