@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -e
+
+# check usage
+
+if [ $# -ne 0 ]; then
+    echo 1>&2 "Usage: $(basename $0)"
+    exit 127
+fi
+
+
+# check before proceeding
+
+find . -maxdepth 1 -type f -name "*.res" | grep -v 'data.res' > reslist.temp
+nresfile=$(cat reslist.temp | wc -l)
+
+[[ $nresfile -eq 0 ]] && echo 1>&2 "Warning: $*.res not found" && rm -f reslist.temp exit 0 # fail peacefully
+
+
+#===============================================================================
+# Main
+#===============================================================================
+
+# Note
+# ls causes the following error: Argument list too long (ls/grep)
+# find always gives 0 exit code regardless whether any file is found or not
+
+
+echo 1>&2 "# res: $nresfile"
+
+echo "removing incomplete res files ..."
+
+
+# remove empty res files
+
+find . -maxdepth 1 -type f -name "$seed-*.res" -empty -delete
+
+
+# remove res files without TITL or END
+
+cat reslist.temp | xargs grep -L TITL 2>/dev/null | xargs rm -f &
+cat reslist.temp | xargs grep -L END 2>/dev/null | xargs rm -f &
+
+wait
+
+find . -maxdepth 1 -type f -name "*.res" | grep -v 'data.res' > reslist.temp
+nresfile=$(cat reslist.temp | wc -l)
+echo 1>&2 "# res: $nresfile"
+
+rm -f reslist.temp
+
+exit 0

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -lt 1 ]; then                                                                                                   
+    echo 1>&2 "usage: $(basename $0) <*.res.tar> <seed list file>"
+    exit 127                                                                                                            
+fi                                                                                                                      
+                                                                                                                        
+# get arguments                                                                                                         
+                                                                                                                        
+thresh=$1 # default 0.01                                                                                                
+                                                                                                                        
+# check before proceedings
+
+[[ -d hopper ]] && echo "hopper directory exists" && exit 127
+
+
+#==============================================================================
+# Main
+#==============================================================================
+
+mkdir hopper
+
+cat "$2" | parallel --progress tar -xf "$1" -C hopper {}.res
+

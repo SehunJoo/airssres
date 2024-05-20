@@ -1,0 +1,8 @@
+#!/bin/bash
+
+res2minsep > MINSEP.txt
+
+ca.py -rv -pa  > cryan.txt
+
+ca.py -cv
+

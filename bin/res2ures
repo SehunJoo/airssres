@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -lt 1 ]; then
+    echo 1>&2 "usage: $(basename $0) <thresh>"
+    exit 127
+fi
+
+# get arguments
+
+thresh=$1 # default 0.01
+
+# check before proceedings
+
+
+
+#===============================================================================
+# Main
+#===============================================================================
+
+# Note
+# If you specify -f $formula for structures with various compositions,
+# all compositions other then $formula are deleted together
+
+
+# retrieve chemical compositions
+
+ca -s 2>/dev/null | awk '{print $6}' > comp.temp
+ncomp=$(cat comp.temp | wc -l)
+
+echo "# compositions: $ncomp" 1>&2
+echo "structural similiarty threshhold: $thresh" 1>&2
+
+# retrieve res file metadata
+
+ca -l -r > reslist.temp 2>/dev/null
+
+
+# group res files by chemical comosition
+
+echo "group res files by compositions ..."
+cat comp.temp | parallel -I__COMP__ --progress "mkdir -p __COMP__; grep ' __COMP__ ' reslist.temp | awk '{printf \"%s.res\\n\", \$1}' | xargs -I{} mv {} __COMP__/"
+
+
+# unite similar structures
+
+echo "unite similar structures ..."
+cat comp.temp | parallel -I__COMP__ --progress "cd __COMP__/ && ca -u $thresh --delete"
+
+
+# regather res files
+
+echo "regather res files ..."
+cat comp.temp | parallel -I__COMP__ --progress "mv __COMP__/* . && rm -rf __COMP__/"
+
+rm -f comp.temp reslist.temp
+
+echo "done"
+
+exit 0

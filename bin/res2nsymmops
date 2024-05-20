@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e                                                                                                                  
+                                                                                                                        
+if [ $# -ne 1 ]; then                                                                                                   
+    echo 1>&2 "usage: $(basename $0) <seed>"                                                                         
+    exit 127                                                                                                            
+fi  
+
+seed=$1
+
+# check the existence of c2x
+
+which c2x >/dev/null || (echo "c2x not found" && exit 127)
+
+
+# for cell file
+
+#which cabal >/dev/null || (echo "cabal not found" && exit 127)
+#rescat $seed | cabal res cell > $seed.temp.cell
+#c2x -e=0.01 --int  $seed.temp.cell 2>&1 | awk '/Tol/ {print $5}'
+#c2x -e=0.01 --list $seed.temp.cell 2>&1 | awk '/Tol/ {print $2}'
+#rm -f $seed.temp.cell
+
+# for res file
+
+rescat $seed  > $seed.temp.res
+
+c2x -e=0.01 --int --shelx $seed.temp.res 2>&1 | awk '/Tol/ {print $5}' 1>&2
+c2x -e=0.01 --list --shelx $seed.temp.res 2>&1 | awk '/Tol/ {print $2}'
+
+rm -f $seed.temp.res
